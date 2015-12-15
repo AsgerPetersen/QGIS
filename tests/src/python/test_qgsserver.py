@@ -177,7 +177,7 @@ class TestQgsServer(unittest.TestCase):
         header, body = [str(_v) for _v in self.server.handleRequest(query_string)]
         self.assert_headers(header, body)
         response = header + body
-        f = open(self.testdata_path + 'wfs_'+ request.lower() + '.txt')
+        f = open(self.testdata_path + 'wfs_' + request.lower() + '.txt')
         expected = f.read()
         f.close()
         # Store the output for debug or to regenerate the reference documents:
@@ -206,7 +206,7 @@ class TestQgsServer(unittest.TestCase):
         header, body = [str(_v) for _v in self.server.handleRequest(query_string)]
         self.assert_headers(header, body)
         response = header + body
-        f = open(self.testdata_path + 'wfs_getfeature_'+ requestid + '.txt')
+        f = open(self.testdata_path + 'wfs_getfeature_' + requestid + '.txt')
         expected = f.read()
         f.close()
         # Store the output for debug or to regenerate the reference documents:
@@ -238,7 +238,7 @@ class TestQgsServer(unittest.TestCase):
         if headers.has_key('content-length'):
             content_length = int(headers['content-length'])
             body_length = len(body)
-            self.assertEqual(content_length, body_length, msg= "Header reported content-length: %d Actual body length was: %d" %(content_length, body_length) )
+            self.assertEqual(content_length, body_length, msg="Header reported content-length: %d Actual body length was: %d" % (content_length, body_length) )
 
 
     # The following code was used to test type conversion in python bindings
