@@ -49,10 +49,10 @@ public:
   double mLightAzimuth;
 
     /** Calculates the first order derivative in x-direction according to Horn (1981)*/
-    float calcFirstDerX( double x11, double x21, double x31, double x12, double x22, double x32, double x13, double x23, double x33 );
+    float calcFirstDerX(double x11, double x21, double x31, double x12, double x22, double x32, double x13, double x23, double x33 , float mCellSize);
 
     /** Calculates the first order derivative in y-direction according to Horn (1981)*/
-    float calcFirstDerY( double x11, double x21, double x31, double x12, double x22, double x32, double x13, double x23, double x33 );
+    float calcFirstDerY(double x11, double x21, double x31, double x12, double x22, double x32, double x13, double x23, double x33 , float mCellSize);
 };
 
 #endif // QGSHILLSHADERENDERER_H

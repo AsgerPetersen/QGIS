@@ -66,7 +66,8 @@ QgsRasterBlock *QgsHillshadeRenderer::block(int bandNo, const QgsRectangle &exte
   }
 
   mInputNodataValue = inputBlock->noDataValue();
-  QRgb myDefaultColor = NODATA_COLOR;
+  QRgb myDefaultColor = qRgb(255, 0,0 );
+//  QRgb myDefaultColor = NODATA_COLOR;
   qgssize xSize = (qgssize)width*height;
   for ( qgssize i = 0; i < height; i++ )
     {
@@ -130,8 +131,10 @@ QgsRasterBlock *QgsHillshadeRenderer::block(int bandNo, const QgsRectangle &exte
         x33 = inputBlock->value(i + 1, j + 1);
       }
 
-  double derX = calcFirstDerX( x11, x21, x31, x12, x22, x32, x13, x23, x33 );
-  double derY = calcFirstDerY( x11, x21, x31, x12, x22, x32, x13, x23, x33 );
+      float resolution = extent.width() / float(width);
+  double derX = calcFirstDerX( x11, x21, x31, x12, x22, x32, x13, x23, x33, resolution );
+      resolution = extent.height() / float(height);
+  double derY = calcFirstDerY( x11, x21, x31, x12, x22, x32, x13, x23, x33, resolution );
 
   float zenith_rad = mLightAngle * M_PI / 180.0;
   float slope_rad = atan( mZFactor * sqrt( derX * derX + derY * derY ) );
@@ -190,10 +193,10 @@ void QgsHillshadeRenderer::setBand(int bandNo)
 }
 
 
-float QgsHillshadeRenderer::calcFirstDerX( double x11, double x21, double x31, double x12, double x22, double x32, double x13, double x23, double x33 )
+float QgsHillshadeRenderer::calcFirstDerX( double x11, double x21, double x31, double x12, double x22, double x32, double x13, double x23, double x33, float mCellSize )
 {
   //the basic formula would be simple, but we need to test for nodata values...
-  return ((x13 + x23 + x23 + x33) - (x11 + x21 + x21 + x31)) / (8 * 1);
+  return ((x13 + x23 + x23 + x33) - (x11 + x21 + x21 + x31)) / (8 * mCellSize);
 //  return (( (*x31 - *x11) + 2 * (*x32 - *x12) + (*x33 - *x13) ) / (8 * mCellSizeX));
 
   int weight = 0;
@@ -258,10 +261,10 @@ float QgsHillshadeRenderer::calcFirstDerX( double x11, double x21, double x31, d
   return sum / (weight * 0.5 );
 }
 
-float QgsHillshadeRenderer::calcFirstDerY( double x11, double x21, double x31, double x12, double x22, double x32, double x13, double x23, double x33 )
+float QgsHillshadeRenderer::calcFirstDerY( double x11, double x21, double x31, double x12, double x22, double x32, double x13, double x23, double x33, float mCellSize )
 {
   //the basic formula would be simple, but we need to test for nodata values...
-  return (( x31 + x32 + x32 + x33) - ( x11 + x12 + x12 + x13)) / (8 * -1);
+  return (( x31 + x32 + x32 + x33) - ( x11 + x12 + x12 + x13)) / (8 * -mCellSize);
 //   return (((x11 - x13) + 2 * (x21 - x23) + (x31 - x33)) / ( 8 * mCellSizeY));
 
   double sum = 0;

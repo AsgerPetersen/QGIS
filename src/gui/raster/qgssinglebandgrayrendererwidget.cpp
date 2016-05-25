@@ -18,6 +18,7 @@
 #include "qgssinglebandgrayrendererwidget.h"
 #include "qgssinglebandgrayrenderer.h"
 #include "qgsrasterlayer.h"
+#include "qgsbilinearrasterresampler.h"
 
 QgsSingleBandGrayRendererWidget::QgsSingleBandGrayRendererWidget( QgsRasterLayer* layer, const QgsRectangle &extent )
     : QgsRasterRendererWidget( layer, extent )
@@ -184,6 +185,9 @@ QgsHillshadeRendererWidget::QgsHillshadeRendererWidget(QgsRasterLayer *layer, co
   connect( mLightAngle, SIGNAL( valueChanged(double)), this, SIGNAL( widgetChanged()));
   connect( mLightAzimuth, SIGNAL( valueChanged(double)), this, SIGNAL( widgetChanged()));
   connect( mZFactor, SIGNAL( valueChanged(double)), this, SIGNAL( widgetChanged()));
+
+  QgsBilinearRasterResampler* zoomedInResampler = new QgsBilinearRasterResampler();
+  layer->resampleFilter()->setZoomedInResampler(zoomedInResampler);
 }
 
 QgsHillshadeRendererWidget::~QgsHillshadeRendererWidget()
