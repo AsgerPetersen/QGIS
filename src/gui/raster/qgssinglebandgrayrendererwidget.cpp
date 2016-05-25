@@ -173,7 +173,7 @@ QgsHillshadeRendererWidget::QgsHillshadeRendererWidget(QgsRasterLayer *layer, co
   mZFactor->setSingleStep(0.1);
 
   mLightAngle->setValue( 45.00);
-  mLightAzimuth->setValue( 300.00 );
+  mLightAzimuth->setValue( 315.00 );
   mZFactor->setValue( 1 );
 
   this->setLayout( new QVBoxLayout());
