@@ -65,6 +65,7 @@ QgsRasterBlock *QgsHillshadeRenderer::block(int bandNo, const QgsRectangle &exte
     return outputBlock;
   }
 
+  mInputNodataValue = inputBlock->noDataValue();
   QRgb myDefaultColor = NODATA_COLOR;
   qgssize xSize = (qgssize)width*height;
   for ( qgssize i = 0; i < height; i++ )
@@ -72,6 +73,12 @@ QgsRasterBlock *QgsHillshadeRenderer::block(int bandNo, const QgsRectangle &exte
 
       for ( qgssize j = 0; j < width; j++)
         {
+
+          if ( inputBlock->isNoData( i, j ) )
+          {
+            outputBlock->setColor( i, j, myDefaultColor );
+            continue;
+          }
 
         double x11;
         double x21;
@@ -127,19 +134,35 @@ QgsRasterBlock *QgsHillshadeRenderer::block(int bandNo, const QgsRectangle &exte
   double derY = calcFirstDerY( x11, x21, x31, x12, x22, x32, x13, x23, x33 );
 
   float zenith_rad = mLightAngle * M_PI / 180.0;
-  float slope_rad = atan( sqrt( derX * derX + derY * derY ) );
+  float slope_rad = atan( mZFactor * sqrt( derX * derX + derY * derY ) );
   float azimuth_rad = mLightAzimuth * M_PI / 180.0;
-  float aspect_rad = 0;
+  double aspect_rad = 0;
 
-  if ( derX == 0 && derY == 0 ) //aspect undefined, take a neutral value. Better solutions?
-  {
-    aspect_rad = azimuth_rad / 2.0;
-  }
-  else
-  {
-    aspect_rad = M_PI + atan2( derX, derY );
-  }
-  double colorvalue = qMax( 0.0, 255.0 * (( cos( zenith_rad ) * cos( slope_rad ) ) + ( sin( zenith_rad ) * sin( slope_rad ) * cos( azimuth_rad - aspect_rad ) ) ) );
+  if ( derX > 0)
+    {
+        aspect_rad = atan2( derX, -derY );
+        if ( aspect_rad < 0 )
+          {
+            aspect_rad = 2 * M_PI + aspect_rad;
+          }
+    }
+
+  if ( derX == 0)
+    {
+      if ( derY > 0 )
+        {
+          aspect_rad = M_PI / 2;
+        }
+      else if ( derY < 0 )
+        {
+           aspect_rad = 2 * M_PI - M_PI/2;
+        }
+      else
+        aspect_rad = aspect_rad;
+    }
+
+  double colorvalue = qMax( 0.0, 255.0 * ( ( cos( zenith_rad ) * cos( slope_rad ) ) +
+                                           ( sin( zenith_rad ) * sin( slope_rad ) * cos( azimuth_rad - aspect_rad ) ) ) );
   outputBlock->setColor( i, j, qRgb( colorvalue, colorvalue, colorvalue));
    }
     }
@@ -170,7 +193,8 @@ void QgsHillshadeRenderer::setBand(int bandNo)
 float QgsHillshadeRenderer::calcFirstDerX( double x11, double x21, double x31, double x12, double x22, double x32, double x13, double x23, double x33 )
 {
   //the basic formula would be simple, but we need to test for nodata values...
-  //return (( (*x31 - *x11) + 2 * (*x32 - *x12) + (*x33 - *x13) ) / (8 * mCellSizeX));
+  return ((x13 + x23 + x23 + x33) - (x11 + x21 + x21 + x31)) / (8 * 1);
+//  return (( (*x31 - *x11) + 2 * (*x32 - *x12) + (*x33 - *x13) ) / (8 * mCellSizeX));
 
   int weight = 0;
   double sum = 0;
@@ -178,7 +202,7 @@ float QgsHillshadeRenderer::calcFirstDerX( double x11, double x21, double x31, d
   //first row
   if ( x31 != mInputNodataValue && x11 != mInputNodataValue ) //the normal case
   {
-    sum += ( x31 - x11 );
+    sum += ( x13 - x11 );
     weight += 2;
   }
   else if ( x31 == mInputNodataValue && x11 != mInputNodataValue && x21 != mInputNodataValue ) //probably 3x3 window is at the border
@@ -231,13 +255,14 @@ float QgsHillshadeRenderer::calcFirstDerX( double x11, double x21, double x31, d
     return mOutputNodataValue;
   }
 
-  return sum / (weight * 0.5 * mZFactor );
+  return sum / (weight * 0.5 );
 }
 
 float QgsHillshadeRenderer::calcFirstDerY( double x11, double x21, double x31, double x12, double x22, double x32, double x13, double x23, double x33 )
 {
   //the basic formula would be simple, but we need to test for nodata values...
-  //return (((*x11 - *x13) + 2 * (*x21 - *x23) + (*x31 - *x33)) / ( 8 * mCellSizeY));
+  return (( x31 + x32 + x32 + x33) - ( x11 + x12 + x12 + x13)) / (8 * -1);
+//   return (((x11 - x13) + 2 * (x21 - x23) + (x31 - x33)) / ( 8 * mCellSizeY));
 
   double sum = 0;
   int weight = 0;
@@ -298,7 +323,7 @@ float QgsHillshadeRenderer::calcFirstDerY( double x11, double x21, double x31, d
     return mOutputNodataValue;
   }
 
-  return sum / (weight * -0.5 * mZFactor );
+  return sum / (weight * -0.5 );
 }
 
 

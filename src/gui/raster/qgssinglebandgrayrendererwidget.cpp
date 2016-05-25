@@ -169,7 +169,7 @@ QgsHillshadeRendererWidget::QgsHillshadeRendererWidget(QgsRasterLayer *layer, co
 
   mLightAngle->setMaximum(360.00);
   mLightAzimuth->setMaximum(360.00);
-  mZFactor->setMaximum(1.0);
+//  mZFactor->setMaximum(1.0);
   mZFactor->setSingleStep(0.1);
 
   mLightAngle->setValue( 45.00);
