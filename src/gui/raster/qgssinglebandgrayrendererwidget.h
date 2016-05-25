@@ -18,9 +18,29 @@
 #ifndef QGSSINGLEBANDGRAYRENDERERWIDGET_H
 #define QGSSINGLEBANDGRAYRENDERERWIDGET_H
 
+#include <QDoubleSpinBox>
+
 #include "qgsrasterminmaxwidget.h"
 #include "qgsrasterrendererwidget.h"
 #include "ui_qgssinglebandgrayrendererwidgetbase.h"
+
+class GUI_EXPORT QgsHillshadeRendererWidget: public QgsRasterRendererWidget
+{
+    Q_OBJECT
+  public:
+    QgsHillshadeRendererWidget( QgsRasterLayer* layer, const QgsRectangle &extent = QgsRectangle() );
+    ~QgsHillshadeRendererWidget();
+
+    static QgsRasterRendererWidget* create( QgsRasterLayer* layer, const QgsRectangle &theExtent ) { return new QgsHillshadeRendererWidget( layer, theExtent ); }
+
+    QgsRasterRenderer* renderer() override;
+
+    void setFromRenderer( const QgsRasterRenderer* r );
+  private:
+    QDoubleSpinBox* mLightAngle;
+    QDoubleSpinBox* mLightAzimuth;
+    QDoubleSpinBox* mZFactor;
+};
 
 class GUI_EXPORT QgsSingleBandGrayRendererWidget: public QgsRasterRendererWidget, private Ui::QgsSingleBandGrayRendererWidgetBase
 {

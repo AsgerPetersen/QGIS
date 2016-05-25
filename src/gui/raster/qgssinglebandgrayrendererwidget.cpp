@@ -156,3 +156,65 @@ void QgsSingleBandGrayRendererWidget::setFromRenderer( const QgsRasterRenderer* 
       mContrastEnhancementComboBox->findData(( int )( ce->contrastEnhancementAlgorithm() ) ) );
   }
 }
+
+#include "qgshillshaderenderer.h"
+
+
+QgsHillshadeRendererWidget::QgsHillshadeRendererWidget(QgsRasterLayer *layer, const QgsRectangle &extent)
+    : QgsRasterRendererWidget( layer, extent )
+{
+  mLightAngle = new QDoubleSpinBox(this);
+  mLightAzimuth = new QDoubleSpinBox(this);
+  mZFactor = new QDoubleSpinBox(this);
+
+  mLightAngle->setMaximum(360.00);
+  mLightAzimuth->setMaximum(360.00);
+  mZFactor->setMaximum(1.0);
+  mZFactor->setSingleStep(0.1);
+
+  mLightAngle->setValue( 45.00);
+  mLightAzimuth->setValue( 300.00 );
+  mZFactor->setValue( 1 );
+
+  this->setLayout( new QVBoxLayout());
+  this->layout()->addWidget( mLightAngle );
+  this->layout()->addWidget( mLightAzimuth );
+  this->layout()->addWidget( mZFactor );
+
+  connect( mLightAngle, SIGNAL( valueChanged(double)), this, SIGNAL( widgetChanged()));
+  connect( mLightAzimuth, SIGNAL( valueChanged(double)), this, SIGNAL( widgetChanged()));
+  connect( mZFactor, SIGNAL( valueChanged(double)), this, SIGNAL( widgetChanged()));
+}
+
+QgsHillshadeRendererWidget::~QgsHillshadeRendererWidget()
+{
+
+}
+
+QgsRasterRenderer *QgsHillshadeRendererWidget::renderer()
+{
+  if ( !mRasterLayer )
+  {
+    return nullptr;
+  }
+  QgsRasterDataProvider* provider = mRasterLayer->dataProvider();
+  if ( !provider )
+  {
+    return nullptr;
+  }
+
+  int band = 0;
+  QgsHillshadeRenderer* renderer = new QgsHillshadeRenderer( provider, band, mLightAzimuth->value(), mLightAngle->value() );
+  renderer->setZFactor( mZFactor->value() );
+  return renderer;
+}
+
+void QgsHillshadeRendererWidget::setFromRenderer(const QgsRasterRenderer *r)
+{
+  const QgsHillshadeRenderer* gr = dynamic_cast<const QgsHillshadeRenderer*>( r );
+  if ( gr )
+    {
+
+    }
+
+}
