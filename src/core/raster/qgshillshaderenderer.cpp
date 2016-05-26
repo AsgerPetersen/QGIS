@@ -124,17 +124,20 @@ QgsRasterBlock *QgsHillshadeRenderer::block(int bandNo, const QgsRectangle &exte
           double x23;
           double x33;
 
-        x11 = inputBlock->value(iUp, jLeft);
-        x21 = inputBlock->value(i, jLeft);
-        x31 = inputBlock->value(iDown, jLeft);
+          // This is center cell. It is not nodata. Use this in place of nodata neighbors
+          x22 = inputBlock->value(i, j);
 
-        x12 = inputBlock->value(iUp, j);
-        x22 = inputBlock->value(i, j);
-        x32 = inputBlock->value(iDown, j);
+        x11 = inputBlock->isNoData(iUp, jLeft )  ? x22 : inputBlock->value(iUp, jLeft);
+        x21 = inputBlock->isNoData(i, jLeft)     ? x22 : inputBlock->value(i, jLeft);
+        x31 = inputBlock->isNoData(iDown, jLeft) ? x22 : inputBlock->value(iDown, jLeft);
 
-        x13 = inputBlock->value(iUp, jRight);
-        x23 = inputBlock->value(i, jRight);
-        x33 = inputBlock->value(iDown, jRight);
+        x12 = inputBlock->isNoData(iUp, j)       ? x22 : inputBlock->value(iUp, j);
+        // x22
+        x32 = inputBlock->isNoData(iDown, j)     ? x22 : inputBlock->value(iDown, j);
+
+        x13 = inputBlock->isNoData(iUp, jRight)   ? x22 :inputBlock->value(iUp, jRight);
+        x23 = inputBlock->isNoData(i, jRight)     ? x22 : inputBlock->value(i, jRight);
+        x33 = inputBlock->isNoData(iDown, jRight) ? x22 : inputBlock->value(iDown, jRight);
 
       float resolution = extent.width() / float(width);
   double derX = calcFirstDerX( x11, x21, x31, x12, x22, x32, x13, x23, x33, resolution );
