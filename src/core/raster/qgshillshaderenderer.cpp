@@ -81,55 +81,60 @@ QgsRasterBlock *QgsHillshadeRenderer::block(int bandNo, const QgsRectangle &exte
             continue;
           }
 
-        double x11;
-        double x21;
-        double x31;
-        double x12;
-        double x22;
-        double x32;
-        double x13;
-        double x23;
-        double x33;
+          qgssize iUp, iDown, jLeft, jRight;
+          if( i == 0 )
+          {
+            iUp = i;
+            iDown = i + 1;
+          }
+          else if( i < height - 1 )
+          {
+            iUp = i - 1;
+            iDown = i + 1;
+          }
+          else
+          {
+              iUp = i - 1;
+              iDown = i;
+          }
 
-      if ( i == 0 )
-      {
-        x11 = 0;
-        x21 = inputBlock->value(i, j - 1);
-        x31 = inputBlock->value(i+1, j - 1);
-        x12 = 0;
-        x22 = inputBlock->value(i, j); // Working
-        x32 = inputBlock->value(i+1, j);
-        x13 = 0;
-        x23 = inputBlock->value(i, j + 1);
-        x33 = inputBlock->value(i+1, j+ 1);
+          if( j == 0)
+          {
+              jLeft = j;
+              jRight = j + 1;
+          }
+          else if( j < width - 1)
+          {
+              jLeft = j - 1;
+              jRight = j + 1;
+          }
+          else
+          {
+              jLeft = j - 1;
+              jRight = j;
+          }
 
-      }
-      else if ( i == height - 1 )
-      {
-        x11 = 0;
-        x21 = 0;
-        x31 = 0;
-        x12 = 0;
-        x22 = 0;
-        x32 = 0;
-        x13 = 0;
-        x23 = 0;
-        x33 = 0;
-      }
-      else
-      {
-        x11 = inputBlock->value(i - 1, j - 1);
-        x21 = inputBlock->value(i, j - 1);
-        x31 = inputBlock->value(i + 1, j - 1);
+          double x11;
+          double x21;
+          double x31;
+          double x12;
+          double x22; // Working cell
+          double x32;
+          double x13;
+          double x23;
+          double x33;
 
-        x12 = inputBlock->value(i - 1, j);
+        x11 = inputBlock->value(iUp, jLeft);
+        x21 = inputBlock->value(i, jLeft);
+        x31 = inputBlock->value(iDown, jLeft);
+
+        x12 = inputBlock->value(iUp, j);
         x22 = inputBlock->value(i, j);
-        x32 = inputBlock->value(i + 1, j);
+        x32 = inputBlock->value(iDown, j);
 
-        x13 = inputBlock->value(i - 1, j + 1);
-        x23 = inputBlock->value(i, j + 1);
-        x33 = inputBlock->value(i + 1, j + 1);
-      }
+        x13 = inputBlock->value(iUp, jRight);
+        x23 = inputBlock->value(i, jRight);
+        x33 = inputBlock->value(iDown, jRight);
 
       float resolution = extent.width() / float(width);
   double derX = calcFirstDerX( x11, x21, x31, x12, x22, x32, x13, x23, x33, resolution );
