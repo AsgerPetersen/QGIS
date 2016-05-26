@@ -138,7 +138,7 @@ QgsRasterBlock *QgsHillshadeRenderer::block(int bandNo, const QgsRectangle &exte
 
   float zenith_rad = mLightAngle * M_PI / 180.0;
   float slope_rad = atan( mZFactor * sqrt( derX * derX + derY * derY ) );
-  float azimuth_rad = mLightAzimuth * M_PI / 180.0;
+  float azimuth_rad = -1 * mLightAzimuth * M_PI / 180.0;
   double aspect_rad = 0;
 
   if ( derX != 0)
