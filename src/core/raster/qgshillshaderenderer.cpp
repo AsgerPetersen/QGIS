@@ -113,8 +113,6 @@ QgsRasterBlock *QgsHillshadeRenderer::block( int bandNo, const QgsRectangle &ext
   double angle2_rad = (-1 * mLightAzimuth + 45 * 0.5) * M_PI / 180.0;
   double angle3_rad = (-1 * mLightAzimuth + 45 + 45 * 0.5) * M_PI / 180.0;
 
-
-
   QRgb myDefaultColor = NODATA_COLOR;
 
   for ( qgssize i = 0; i < ( qgssize )height; i++ )
@@ -194,43 +192,34 @@ QgsRasterBlock *QgsHillshadeRenderer::block( int bandNo, const QgsRectangle &ext
       double aspectRad = atan2( derX, -derY );
 
 
+      double grayValue;
       if( !multiDirection )
       {
           // Standard single direction hillshade
-          double colorvalue = qBound( 0.0, 255.0 * (( cosZenithRad * cos( slope_rad ) ) +
-                                      ( sinZenithRad * sin( slope_rad ) *
-                                        cos( azimuthRad - aspectRad ) ) ), 255.0 );
-
-          outputBlock->setColor( i, j, qRgb( colorvalue, colorvalue, colorvalue ) );
+          grayValue = qBound( 0.0, 255.0 * ( cosZenithRad * cos( slope_rad )
+                                             + sinZenithRad * sin( slope_rad )
+                                             * cos( azimuthRad - aspectRad )) , 255.0 );
       }
       else
       {
-          double w0 = sin( aspectRad - angle0_rad);
-          double w1 = sin( aspectRad - angle1_rad);
-          double w2 = sin( aspectRad - angle2_rad);
-          double w3 = sin( aspectRad - angle3_rad);
+          double weight0 = sin( aspectRad - angle0_rad);
+          double weight1 = sin( aspectRad - angle1_rad);
+          double weight2 = sin( aspectRad - angle2_rad);
+          double weight3 = sin( aspectRad - angle3_rad);
+          weight0 = weight0 * weight0;
+          weight1 = weight1 * weight1;
+          weight2 = weight2 * weight2;
+          weight3 = weight3 * weight3;
 
-          w0 = w0 * w0;
-          w1 = w1 * w1;
-          w2 = w2 * w2;
-          w3 = w3 * w3;
-
-          double color0 = (( cosZenithRad * cos( slope_rad ) ) +
-                           ( sinZenithRad * sin( slope_rad ) *
-                           cos( angle0_rad - aspectRad ) ) );
-          double color1 = (( cosZenithRad * cos( slope_rad ) ) +
-                           ( sinZenithRad * sin( slope_rad ) *
-                           cos( angle1_rad - aspectRad ) ) );
-          double color2 = (( cosZenithRad * cos( slope_rad ) ) +
-                           ( sinZenithRad * sin( slope_rad ) *
-                           cos( angle2_rad - aspectRad ) ) );
-          double color3 = (( cosZenithRad * cos( slope_rad ) ) +
-                           ( sinZenithRad * sin( slope_rad ) *
-                           cos( angle3_rad - aspectRad ) ) );
-
-          double weightedColor = qBound(0.0, 255 * ( w0 * color0 + w1 * color1 + w2 * color2 + w3 * color3 ) * 0.5, 255.0);
-          outputBlock->setColor( i, j, qRgb( weightedColor, weightedColor, weightedColor ) );
+          double cosslope = cosZenithRad * cos( slope_rad );
+          double sinslope = sinZenithRad * sin( slope_rad );
+          double color0 = cosslope + sinslope * cos( angle0_rad - aspectRad ) ;
+          double color1 = cosslope + sinslope * cos( angle1_rad - aspectRad ) ;
+          double color2 = cosslope + sinslope * cos( angle2_rad - aspectRad ) ;
+          double color3 = cosslope + sinslope * cos( angle3_rad - aspectRad ) ;
+          grayValue = qBound(0.0, 255 * ( weight0 * color0 + weight1 * color1 + weight2 * color2 + weight3 * color3 ) * 0.5, 255.0);
       }
+      outputBlock->setColor( i, j, qRgb( grayValue, grayValue, grayValue ) );
     }
   }
   return outputBlock;
