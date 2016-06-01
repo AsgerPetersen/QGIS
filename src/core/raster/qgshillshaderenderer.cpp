@@ -30,6 +30,7 @@ QgsHillshadeRenderer::QgsHillshadeRenderer( QgsRasterInterface *input, int band,
     , mZFactor( 1 )
     , mLightAngle( lightAngle )
     , mLightAzimuth( lightAzimuth )
+    , mMultiDirection( false )
 {
 
 }
@@ -38,6 +39,7 @@ QgsHillshadeRenderer *QgsHillshadeRenderer::clone() const
 {
   QgsHillshadeRenderer* r = new QgsHillshadeRenderer( nullptr, mBand, mLightAzimuth, mLightAngle );
   r->setZFactor( mZFactor );
+  r->SetMultiDirection( mMultiDirection );
   return r;
 }
 
@@ -52,8 +54,10 @@ QgsRasterRenderer *QgsHillshadeRenderer::create( const QDomElement &elem, QgsRas
   double azimuth = elem.attribute( "azimuth", "315" ).toDouble();
   double angle = elem.attribute( "angle", "45" ).toDouble();
   double zFactor = elem.attribute( "zfactor", "1" ).toDouble();
+  int multiDirection = elem.attribute( "multidirection", "0" ).toInt();
   QgsHillshadeRenderer* r = new QgsHillshadeRenderer( input, band, azimuth , angle );
   r->setZFactor( zFactor );
+  r->SetMultiDirection( multiDirection > 0 );
   return r;
 }
 
@@ -71,6 +75,7 @@ void QgsHillshadeRenderer::writeXML( QDomDocument &doc, QDomElement &parentElem 
   rasterRendererElem.setAttribute( "azimuth", QString::number( mLightAzimuth ) );
   rasterRendererElem.setAttribute( "angle", QString::number( mLightAngle ) );
   rasterRendererElem.setAttribute( "zfactor", QString::number( mZFactor ) );
+  rasterRendererElem.setAttribute( "multidirection", QString::number( mMultiDirection ) );
   parentElem.appendChild( rasterRendererElem );
 }
 
@@ -107,7 +112,6 @@ QgsRasterBlock *QgsHillshadeRenderer::block( int bandNo, const QgsRectangle &ext
   double sinZenithRad = sin( zenithRad );
 
   // Multi direction hillshade: http://pubs.usgs.gov/of/1992/of92-422/of92-422.pdf
-  bool multiDirection = true;
   double angle0_rad = (-1 * mLightAzimuth - 45 - 45 * 0.5) * M_PI / 180.0;
   double angle1_rad = (-1 * mLightAzimuth - 45 * 0.5) * M_PI / 180.0;
   double angle2_rad = (-1 * mLightAzimuth + 45 * 0.5) * M_PI / 180.0;
@@ -193,7 +197,7 @@ QgsRasterBlock *QgsHillshadeRenderer::block( int bandNo, const QgsRectangle &ext
 
 
       double grayValue;
-      if( !multiDirection )
+      if( !mMultiDirection )
       {
           // Standard single direction hillshade
           grayValue = qBound( 0.0, 255.0 * ( cosZenithRad * cos( slope_rad )
@@ -202,6 +206,7 @@ QgsRasterBlock *QgsHillshadeRenderer::block( int bandNo, const QgsRectangle &ext
       }
       else
       {
+          // Weighted multi direction as in http://pubs.usgs.gov/of/1992/of92-422/of92-422.pdf
           double weight0 = sin( aspectRad - angle0_rad);
           double weight1 = sin( aspectRad - angle1_rad);
           double weight2 = sin( aspectRad - angle2_rad);
