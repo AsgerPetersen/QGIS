@@ -41,6 +41,9 @@ SET(QGIS_SERVER_SRCS
   qgsfeaturefilterprovidergroup.cpp
   qgsfeaturefilter.cpp
   qgsstorebadlayerinfo.cpp
+  qgsservercachemanager.cpp
+  qgsservercachefilter.cpp
+  qgsaccesscontrol.cpp
 )
 
 SET (QGIS_SERVER_HDRS
@@ -69,9 +72,6 @@ IF (WITH_SERVER_PLUGINS)
     qgsserverplugins.cpp
     qgsserverfilter.cpp
     qgsaccesscontrolfilter.cpp
-    qgsaccesscontrol.cpp
-    qgsservercachefilter.cpp
-    qgsservercachemanager.cpp
   )
 ENDIF (WITH_SERVER_PLUGINS)
 
